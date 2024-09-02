@@ -6,15 +6,16 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.nanaya.r_mj.ui.RmjApp
 import com.nanaya.r_mj.ui.theme.RmjTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val appContext  = applicationContext as RmjApplication
         setContent {
             RmjTheme {
-                RmjApp(appContext.appContainer)
+                RmjApp()
             }
         }
     }

@@ -1,40 +1,60 @@
-package com.nanaya.r_mj.ui
+package com.nanaya.r_mj.ui;
 
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
+import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.nanaya.r_mj.data.IAppContainer
-import com.nanaya.r_mj.ui.home.HomeViewModel
-import com.nanaya.r_mj.ui.home.RmjTopBar
-import com.nanaya.r_mj.ui.home.HomeContent
+import androidx.compose.ui.graphics.BlendMode.Companion.Screen
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.nanaya.r_mj.data.local.model.MjSchoolDetail
+import com.nanaya.r_mj.data.local.model.MjSchoolDetailEntry
+import com.nanaya.r_mj.ui.home.HomeScreen
+import com.nanaya.r_mj.ui.home.MjSchoolDetailPage
+import com.nanaya.r_mj.ui.home.MjSchoolDetailViewModel
 
 @Composable
-fun RmjApp(
-    appContainer: IAppContainer
-) {
-    val vm: HomeViewModel = viewModel(
-        HomeViewModel::class.java,
-        factory = HomeViewModel.providerFactory(appContainer.schoolRepo)
-    )
-    val uiState by vm.uiState.collectAsStateWithLifecycle()
-    val areaLabels = listOf("全国", "华东", "华北", "东北", "中南", "西部")
-    Scaffold(
-        topBar = {
-            RmjTopBar(
-                title = if (uiState.detail == null) "雀庄公式战" else uiState.detail!!.name,
-                showNavBtn = uiState.detail != null,
-                backAction = { vm.navToList() },
-                searchAction = { vm.searchSchools(it) }
+fun RmjApp() {
+    val navController = rememberNavController()
+    Log.d("RmjApp", "app")
+    NavHost(navController = navController, startDestination = RmjScreen.MjSchoolList.route) {
+        composable(RmjScreen.MjSchoolList.route) { backStackEntry: NavBackStackEntry ->
+            HomeScreen(
+                navigateToDetail = { id ->
+                    navController.navigate(
+                        RmjScreen.MjSchoolDetail.createRoute(
+                            id
+                        )
+                    )
+                }
             )
         }
+        composable(
+            route = RmjScreen.MjSchoolDetail.route,
+            arguments = listOf(navArgument(RmjScreen.ARG_DETAIL_ID) { type = NavType.IntType })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getInt(RmjScreen.ARG_DETAIL_ID) ?: 0
+            val mjSchoolDetailVm :MjSchoolDetailViewModel= hiltViewModel()
+            MjSchoolDetailPage() {
+                navController.popBackStack()
+            }
 
-    ) { innerPadding ->
+        }
 
-        HomeContent(innerPadding, areaLabels, vm, uiState)
 
     }
 }
 
+sealed class RmjScreen(val route: String) {
+    data object MjSchoolList : RmjScreen("home")
+    data object MjSchoolDetail : RmjScreen("detail/{$ARG_DETAIL_ID}") {
+        fun createRoute(id: Int) = "detail/$id"
+    }
+
+    companion object{
+        const val ARG_DETAIL_ID = "detail_id"
+    }
+}

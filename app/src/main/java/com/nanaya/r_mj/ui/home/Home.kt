@@ -3,349 +3,367 @@ package com.nanaya.r_mj.ui.home
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.blankj.utilcode.util.LogUtils
-import com.nanaya.r_mj.data.local.LocalMahjongSchool
-import com.nanaya.r_mj.ui.common.MarkDown
+import coil.request.Tags
+import com.nanaya.r_mj.R
+import com.nanaya.r_mj.data.di.BASE_URL
+import com.nanaya.r_mj.data.local.model.Area
+import com.nanaya.r_mj.data.local.model.MjSchoolDetail
+import com.nanaya.r_mj.data.local.model.MjSchoolDetailEntry
+import com.nanaya.r_mj.data.local.model.MjSchoolImg
+import com.nanaya.r_mj.ui.common.LoadMoreState
+import com.nanaya.r_mj.ui.common.SwipeRefreshAndLoadMoreList
+import com.nanaya.r_mj.ui.share.Spinner
 import com.nanaya.r_mj.ui.theme.Area_East
-import com.nanaya.r_mj.ui.theme.Area_West
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.invoke
-import kotlinx.coroutines.withContext
+import com.nanaya.r_mj.ui.theme.Area_East_North
+import com.nanaya.r_mj.ui.theme.Area_Foreign
+import com.nanaya.r_mj.ui.theme.Area_Middle_South
+import com.nanaya.r_mj.ui.theme.Area_North
+import com.nanaya.r_mj.ui.theme.Area_West_North
+import com.nanaya.r_mj.ui.theme.Area_West_South
+import com.nanaya.r_mj.ui.theme.Card_Container
+import com.nanaya.r_mj.ui.theme.Card_Province
+import com.nanaya.r_mj.ui.theme.topbarBg
 
 @Composable
-fun HomeContent(
-    innerPadding: PaddingValues,
-    areaLabels: List<String>,
-    vm: HomeViewModel,
-    uiState: UIState
+fun HomeScreen(
+    viewModel: HomeViewModel = hiltViewModel(),
+    navigateToDetail: (Int) -> Unit,
 ) {
-    val listState = rememberLazyListState()
-    Box(modifier = Modifier.padding(innerPadding)) {
-        Column {
-            if (uiState.detail == null) {
-                Areas(labels = areaLabels) { idx ->
-                    vm.selectArea(areaLabels[idx])
-                }
-            }
-
-            if (uiState.detail == null) {
-
-                RmjSchoolList(
-                    schools = uiState.schools,
-                    listState=listState,
-                    itemClick = { vm.navToDetail(it) })
-            } else {
-                RmjSchoolDetail(uiState.detail)
-            }
-        }
-        if (uiState.isLoading) {
-            Loading()
-        }
-    }
-
+    val uiState by viewModel.state.collectAsStateWithLifecycle()
+    MjSchoolListPage(
+        uiState = uiState as HomeUiState.MjList,
+        onRefresh = { viewModel.updateList() },
+        onLoadMore = { viewModel.loadMore() },
+        onItemClick = { detail -> navigateToDetail(detail.id) },
+        onAreaChanged = viewModel::updateListByArea,
+        onSearch = viewModel::updateListByName
+    )
 }
 
-
 @Composable
-fun Areas(
-    labels: List<String>,
-    onSelected: (Int) -> Unit
+fun MjSchoolListPage(
+    uiState: HomeUiState.MjList,
+    onRefresh: () -> Unit,
+    onLoadMore: () -> Unit,
+    onItemClick: (MjSchoolDetail) -> Unit,
+    onAreaChanged: (String?, String?, String?) -> Unit,
+    onSearch: (String) -> Unit,
 ) {
-    var selectIdx by remember { mutableIntStateOf(0) }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.Yellow)
-    ) {
-        labels.forEachIndexed { index, s ->
+    val snackbarHostState = remember { SnackbarHostState() }
+    var searchContent by remember {
+        mutableStateOf(TextFieldValue(""))
+    }
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = { HomeAppbar(showNav = false) },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
 
-            Text(
-                s, modifier = Modifier
-                    .weight(1f)
-                    .background(
-                        if (selectIdx == index) Area_West else Area_East
-                    )
-                    .clickable {
-                        selectIdx = index
-                        onSelected(index)
-                    }
-                    .padding(4.dp),
-                textAlign = TextAlign.Center,
-                fontSize = 20.sp,
-                color = Color.White
+    ) { innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding)) {
+            com.nanaya.r_mj.ui.share.SearchBar(
+                searchQuery = searchContent,
+                onSearchQueryChanged = {
+                    searchContent = it
+                },
+                onSearch = { onSearch(it) }
             )
-
+            if (!uiState.areaSelectorData.isNullOrEmpty()) {
+                AreaSelector(data = uiState.areaSelectorData, onAreaChanged = onAreaChanged)
+            }
+            HomeScreenList(
+                modifier = Modifier,
+                mjList = uiState.mjSchoolList,
+                isRefreshing = uiState.isRefreshing,
+                loadMoreState = uiState.loadMoreState,
+                onRefresh = onRefresh,
+                onLoadMore = onLoadMore,
+                onItemClick = onItemClick,
+            )
         }
 
-    }
-}
 
-@Composable
-fun Loading() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 80.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator()
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RmjTopBar(
-    title: String,
-    showNavBtn: Boolean,
-    backAction: () -> Unit,
-    searchAction:(String)->Unit
-    ) {
-    var searchContent by remember {
-        mutableStateOf<String?>(null)
-    }
-    val keyboardController = LocalSoftwareKeyboardController.current
-    CenterAlignedTopAppBar(
+fun HomeAppbar(
+    navClick: () -> Unit = {},
+    showNav: Boolean = true,
+    actions: @Composable RowScope.() -> Unit = {}
+) {
+    TopAppBar(
         title = {
-            if(searchContent==null) {
-                Text(text = title, maxLines = 1)
-            }else{
-                TextField(value = searchContent?:"", onValueChange = {searchContent=it} , singleLine = true,
-//                    modifier = Modifier.height(25.dp)
-                    keyboardOptions = KeyboardOptions(
-                        imeAction = ImeAction.Search,
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onSearch = {
-                            searchAction(searchContent!!)
-                            keyboardController?.hide()
-                        }
-                    )
-                )
-            }
+            Image(
+                painter = painterResource(id = R.mipmap.logo),
+                contentDescription = "logo",
+                modifier = Modifier.width(200.dp),
+                contentScale = ContentScale.Inside
+            )
         },
         navigationIcon = {
-            if (showNavBtn) {
-                IconButton(onClick = backAction) {
-                    Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, "back")
+            if (showNav) {
+                IconButton(onClick = navClick) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
                 }
             }
         },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Area_East,
-            titleContentColor = Color.White,
-            actionIconContentColor = Color.White,
-            navigationIconContentColor = Color.White
-        ),
-        actions = {
-            IconButton(onClick = {
-                if(searchContent==null) {
-                    searchContent = ""
-                }else {
-                    searchAction(searchContent!!)
-                    if (searchContent.isNullOrEmpty()){
-                        searchContent=null
-                        keyboardController?.hide()
-                    }
-
-
-                }
-
-
-            }
-            ) {
-                Icon(imageVector = Icons.Filled.Search, contentDescription = "search")
-            }
-        }
-
+        actions = actions,
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = topbarBg)
     )
+
+
+}
+
+
+@Composable
+fun HomeScreenList(
+    modifier: Modifier,
+    mjList: List<MjSchoolDetail>,
+    isRefreshing: Boolean,
+    loadMoreState: LoadMoreState,
+    onRefresh: () -> Unit,
+    onLoadMore: () -> Unit,
+    onItemClick: (MjSchoolDetail) -> Unit
+) {
+    Box(modifier = modifier.fillMaxSize()) {
+        val lazyColumnState = rememberLazyListState()
+        SwipeRefreshAndLoadMoreList(
+            modifier = Modifier.fillMaxSize(),
+            data = mjList,
+            itemLayout = { detail, click -> MjSchoolListItem(detail, click) },
+            isRefreshing = isRefreshing,
+            loadMoreState = loadMoreState,
+            onRefresh = onRefresh,
+            onLoadMore = onLoadMore,
+            onItemClick = onItemClick,
+            lazyColumnState = lazyColumnState
+        )
+        IconButton(
+            modifier = Modifier
+                .size(48.dp)
+                .padding(end = 8.dp, bottom = 16.dp)
+                .align(Alignment.BottomEnd)
+                .background(Color(0x55000000)),
+            onClick = { lazyColumnState.requestScrollToItem(0) }
+        ) {
+            Icon(Icons.Filled.KeyboardArrowUp, null)
+        }
+    }
+
 }
 
 @Composable
-fun RmjSchoolList(
-    schools: List<LocalMahjongSchool>,
-    listState: LazyListState = rememberLazyListState(),
-    itemClick: (LocalMahjongSchool) -> Unit
+fun MjSchoolListItem(
+    detail: MjSchoolDetail,
+    onclick: (MjSchoolDetail) -> Unit
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxWidth(),
-        state = listState
+    ElevatedCard(
+        onClick = { onclick(detail) }, modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Card_Container
+        )
     ) {
-        items(items = schools, key = { i -> i.cid }) { localRmjSchool ->
-            SchoolListItem(localRmjSchool) {
-                itemClick(localRmjSchool)
+        // 头像 名字  地址
+        val avatarUrl = detail.pic_logo
+        Row {
+            AsyncImage(
+                model = avatarUrl,
+                contentDescription = "logo",
+                contentScale = ContentScale.Inside,
+                modifier = Modifier
+                    .size(80.dp)
+                    .background(Color.DarkGray)
+                    .align(Alignment.CenterVertically),
+            )
+            Column(modifier = Modifier.padding(start = 8.dp)) {
+                Text(text = detail.name ?: "", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(text = "地址:${detail.address}", maxLines = 2)
+                Text(text = "QQ群:${detail.qqGroup}")
             }
+        }
+        // tag
+        Tags(txt = detail.tag ?: "")
+        // 地区
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+
+            ) {
+            Box(
+                modifier = Modifier
+                    .size(100.dp, 50.dp)
+                    .background(
+                        when (detail.areaName) {
+                            "东北" -> Area_East_North
+                            "中南" -> Area_Middle_South
+                            "华东" -> Area_East
+                            "华北" -> Area_North
+                            "西北" -> Area_West_North
+                            "西南" -> Area_West_South
+                            else -> Area_Foreign
+                        }
+                    )
+            ) {
+                Text(
+                    modifier = Modifier.align(Alignment.Center),
+                    text = detail.areaName ?: "",
+                    fontSize = 18.sp
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(50.dp)
+                    .background(Card_Province)
+            ) {
+                Text(
+                    modifier = Modifier.align(Alignment.Center),
+                    text = "${detail.province}-${detail.city}-${detail.district}",
+                    fontSize = 18.sp
+                )
+            }
+
         }
     }
 }
 
 @Composable
-fun SchoolListItem(
-    it: LocalMahjongSchool,
-    onItemClick: (LocalMahjongSchool) -> Unit
+fun Tags(txt: String) {
+    Row(modifier = Modifier.padding(4.dp)) {
+        txt.split(',').forEach { tag ->
+            if (tag.trim().isNotEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .border(
+                            1.dp,
+                            color = Area_Middle_South,
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .padding(4.dp)
+                ) {
+                    Text(text = tag)
+                }
+                Spacer(modifier = Modifier.width(4.dp))
+            }
+        }
+    }
+}
+
+
+@Composable
+fun AreaSelector(
+    data: List<Area>,
+    onAreaChanged: (String?, String?, String?) -> Unit
 ) {
+    Log.d("home", data.toString())
+    var areaIndex by remember {
+        mutableIntStateOf(0)
+    }
+    var provinceIndex by remember {
+        mutableIntStateOf(0)
+    }
+    var cityIndex by remember {
+        mutableIntStateOf(0)
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(50.dp)
             .padding(4.dp)
-            .clickable { onItemClick(it) },
-        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(it.name, fontSize = 18.sp, color = it.color)
+        Spinner(
+            modifier = Modifier.width(80.dp),
+            areaIndex,
+            data
+        ) { idx ->
+            areaIndex = idx
+            provinceIndex = 0
+            cityIndex = 0
+            onAreaChanged(
+                data[areaIndex].value,
+                data[areaIndex].children?.getOrNull(provinceIndex)?.value,
+                data[areaIndex].children?.getOrNull(provinceIndex)?.children?.getOrNull(cityIndex)?.value
+            )
+        }
         Spacer(modifier = Modifier.width(8.dp))
-        Text("${it.numerator}/${it.denominator}")
-        Spacer(modifier = Modifier.weight(1f))
-        Box(
-            modifier = Modifier
-
-                .background(
-                    color = it.color,
-                    shape = RoundedCornerShape(8.dp)
-                )
-                .padding(horizontal = 4.dp, vertical = 2.dp)
-        ) {
-            Text(text = it.area, color = Color.White)
+        Spinner(
+            modifier = Modifier.weight(1f),
+            provinceIndex,
+            data[areaIndex].children
+        ) { idx ->
+            provinceIndex = idx
+            cityIndex = 0
+            onAreaChanged(
+                data[areaIndex].value,
+                data[areaIndex].children?.getOrNull(provinceIndex)?.value,
+                data[areaIndex].children?.getOrNull(provinceIndex)?.children?.getOrNull(cityIndex)?.value
+            )
         }
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(it.city)
-
-    }
-    HorizontalDivider()
-}
-
-@Composable
-fun RmjSchoolDetail(
-    detail: LocalMahjongSchool
-) {
-    var composeLines by remember {
-        mutableStateOf<List<@Composable () -> Unit>>(emptyList())
-    }
-    LaunchedEffect(key1 = detail.rule) {
-        composeLines =
-            withContext(Dispatchers.Default) {
-                parseMarkDown(detail.rule)
-            }
-    }
-    LazyColumn(
-        modifier = Modifier.padding(8.dp)
-    ) {
-        item {
-            Text(detail.status)
-        }
-        item {
-            Row {
-
-                Text(detail.area)
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(detail.city)
-            }
-
-        }
-        item {
-            Text("QQ群:${detail.qqGroup}")
-        }
-
-        composeLines.forEach { composeLine ->
-            item { composeLine() }
-        }
-
-
-    }
-
-}
-
-
-private fun parseMarkDown(rule: String): List<@Composable () -> Unit> {
-    LogUtils.d("parse mark down $rule")
-    return rule.lines().map { line ->
-        @Composable {
-            when {
-                line.startsWith("# ") -> {
-                    Text(text = line.substring(2), fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                }
-
-                line.startsWith("## ") -> {
-                    Text(text = line.substring(3), fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                }
-
-                line.startsWith("### ") -> {
-                    Text(text = line.substring(4), fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                }
-
-                line.startsWith("![") && line.contains("](") -> {
-                    // 处理图片
-                    val altText = line.substringAfter("![").substringBefore("]")
-                    val url = line.substringAfter("](").substringBefore(")")
-                    AsyncImage(model = url, contentDescription = "")
-                }
-
-                line.startsWith("**") && line.endsWith("**") -> {
-                    Text(text = line.substring(2, line.length - 2), fontWeight = FontWeight.Bold)
-                }
-
-                line.startsWith("*") && line.endsWith("*") -> {
-                    Text(
-                        text = line.substring(1, line.length - 1),
-                        textDecoration = TextDecoration.LineThrough
-                    )
-                }
-
-                else -> {
-                    Text(text = line)
-                }
-            }
+        Spacer(modifier = Modifier.width(8.dp))
+        Spinner(
+            modifier = Modifier.weight(1f),
+            cityIndex,
+            data[areaIndex].children?.get(provinceIndex)?.children
+        ) { idx ->
+            cityIndex = idx
+            onAreaChanged(
+                data[areaIndex].value,
+                data[areaIndex].children?.getOrNull(provinceIndex)?.value,
+                data[areaIndex].children?.getOrNull(provinceIndex)?.children?.getOrNull(cityIndex)?.value
+            )
         }
     }
 }
-
