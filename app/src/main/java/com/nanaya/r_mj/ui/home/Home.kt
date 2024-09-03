@@ -17,10 +17,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -28,11 +27,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -48,19 +45,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import coil.request.Tags
 import com.nanaya.r_mj.R
-import com.nanaya.r_mj.data.di.BASE_URL
 import com.nanaya.r_mj.data.local.model.Area
 import com.nanaya.r_mj.data.local.model.MjSchoolDetail
-import com.nanaya.r_mj.data.local.model.MjSchoolDetailEntry
-import com.nanaya.r_mj.data.local.model.MjSchoolImg
 import com.nanaya.r_mj.ui.common.LoadMoreState
 import com.nanaya.r_mj.ui.common.SwipeRefreshAndLoadMoreList
 import com.nanaya.r_mj.ui.share.Spinner
@@ -71,18 +63,20 @@ import com.nanaya.r_mj.ui.theme.Area_Middle_South
 import com.nanaya.r_mj.ui.theme.Area_North
 import com.nanaya.r_mj.ui.theme.Area_West_North
 import com.nanaya.r_mj.ui.theme.Area_West_South
-import com.nanaya.r_mj.ui.theme.Card_Container
-import com.nanaya.r_mj.ui.theme.Card_Province
+import com.nanaya.r_mj.ui.theme.White94
+import com.nanaya.r_mj.ui.theme.White87
 import com.nanaya.r_mj.ui.theme.topbarBg
 
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     navigateToDetail: (Int) -> Unit,
+    navMonthRank:()->Unit,
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     MjSchoolListPage(
         uiState = uiState as HomeUiState.MjList,
+        navMonthRank=navMonthRank,
         onRefresh = { viewModel.updateList() },
         onLoadMore = { viewModel.loadMore() },
         onItemClick = { detail -> navigateToDetail(detail.id) },
@@ -99,6 +93,7 @@ fun MjSchoolListPage(
     onItemClick: (MjSchoolDetail) -> Unit,
     onAreaChanged: (String?, String?, String?) -> Unit,
     onSearch: (String) -> Unit,
+    navMonthRank: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     var searchContent by remember {
@@ -106,7 +101,13 @@ fun MjSchoolListPage(
     }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = { HomeAppbar(showNav = false) },
+        topBar = {
+            HomeAppbar {
+                IconButton(onClick = { navMonthRank() }) {
+                    Icon(Icons.Filled.DateRange, null, tint = Color.White)
+                }
+            }
+        },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
 
     ) { innerPadding ->
@@ -139,8 +140,7 @@ fun MjSchoolListPage(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeAppbar(
-    navClick: () -> Unit = {},
-    showNav: Boolean = true,
+    navClick: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {}
 ) {
     TopAppBar(
@@ -153,7 +153,7 @@ fun HomeAppbar(
             )
         },
         navigationIcon = {
-            if (showNav) {
+            if (navClick != null) {
                 IconButton(onClick = navClick) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
                 }
@@ -182,12 +182,11 @@ fun HomeScreenList(
         SwipeRefreshAndLoadMoreList(
             modifier = Modifier.fillMaxSize(),
             data = mjList,
-            itemLayout = { detail, click -> MjSchoolListItem(detail, click) },
+            itemLayout = { _, detail -> MjSchoolListItem(detail) { onItemClick(detail) } },
             isRefreshing = isRefreshing,
             loadMoreState = loadMoreState,
             onRefresh = onRefresh,
             onLoadMore = onLoadMore,
-            onItemClick = onItemClick,
             lazyColumnState = lazyColumnState
         )
         IconButton(
@@ -214,7 +213,7 @@ fun MjSchoolListItem(
             .fillMaxWidth()
             .padding(8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Card_Container
+            containerColor = White94
         )
     ) {
         // 头像 名字  地址
@@ -268,7 +267,7 @@ fun MjSchoolListItem(
                 modifier = Modifier
                     .weight(1f)
                     .height(50.dp)
-                    .background(Card_Province)
+                    .background(White87)
             ) {
                 Text(
                     modifier = Modifier.align(Alignment.Center),

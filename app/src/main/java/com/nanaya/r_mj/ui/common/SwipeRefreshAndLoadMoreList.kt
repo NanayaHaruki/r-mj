@@ -2,8 +2,10 @@ package com.nanaya.r_mj.ui.common
 
 import android.util.Log
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -22,6 +24,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.nanaya.r_mj.ui.share.Loading
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -35,19 +40,18 @@ enum class LoadMoreState {
 fun <T> SwipeRefreshAndLoadMoreList(
     modifier: Modifier,
     data: List<T>,
-    itemLayout: @Composable (T, (T) -> Unit) -> Unit,
+    itemLayout: @Composable (Int,T) -> Unit,
     isRefreshing: Boolean,
     loadMoreState: LoadMoreState,
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
-    onItemClick: (T) -> Unit,
     lazyColumnState: LazyListState = rememberLazyListState(),
 ) {
 
     PullToRefreshBox(isRefreshing = isRefreshing, onRefresh = onRefresh, modifier = modifier) {
         LazyColumn(state = lazyColumnState, horizontalAlignment = Alignment.CenterHorizontally) {
             items(data.size) { index ->
-                itemLayout(data[index], onItemClick)
+                itemLayout(index,data[index])
             }
             if (!isRefreshing) {
                 item {
@@ -56,12 +60,30 @@ fun <T> SwipeRefreshAndLoadMoreList(
                             onLoadMore()
                         }
 
-                        LoadMoreState.Loading -> CircularProgressIndicator()
-                        LoadMoreState.Error -> Text(
-                            text = "加载失败，点击重试",
-                            Modifier.clickable { onLoadMore() })
+                        LoadMoreState.Loading -> Loading()
+                        LoadMoreState.Error -> Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .height(40.dp)
+                                .clickable { onLoadMore()  }
+                        ) {
+                            Text(
+                                text = "加载失败，点击重试",
+                                fontSize = 18.sp,
+                                modifier = Modifier .align(Alignment.Center)
+                            )
 
-                        LoadMoreState.NoData -> Text("没有了～")
+                        }
+
+                        LoadMoreState.NoData -> Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .height(40.dp)) {
+                            Text(
+                                text = "没有了～",
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        }
                     }
 
                 }
@@ -84,7 +106,7 @@ fun SwipeRefreshAndLoadMoreListPreview() {
     SwipeRefreshAndLoadMoreList(
         modifier = Modifier.fillMaxSize(),
         data = list,
-        itemLayout = { item, action -> Text(item) },
+        itemLayout = {idx, item-> Text(item) },
         isRefreshing = isRefresh,
         LoadMoreState.NoData,
         onRefresh = {
@@ -93,6 +115,5 @@ fun SwipeRefreshAndLoadMoreListPreview() {
             isRefresh = false
         },
         onLoadMore = { },
-        onItemClick = {}
     )
 }

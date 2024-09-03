@@ -1,0 +1,419 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "7c18de76ed427dab89f57c7fd114ea60",
+    "entities": [
+      {
+        "tableName": "mj_school",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `address` TEXT, `adminQQ` TEXT, `apply` INTEGER NOT NULL, `areaName` TEXT, `city` TEXT, `compString` TEXT, `contact` TEXT, `contact1` TEXT, `contact2` TEXT, `denominator` TEXT, `district` TEXT, `edit` TEXT, `examineTime` TEXT, `healthy` INTEGER NOT NULL, `info1` TEXT, `info2` TEXT, `lat` TEXT, `license` TEXT, `lng` TEXT, `mobile` TEXT, `mobile1` TEXT, `mobile2` TEXT, `name` TEXT, `newStore` INTEGER NOT NULL, `numerator` TEXT, `popularize` INTEGER NOT NULL, `popularizeTime` TEXT, `position1` TEXT, `position2` TEXT, `province` TEXT, `qqGroup` TEXT, `rule` TEXT, `score` TEXT, `shortName` TEXT, `status` TEXT, `tag` TEXT, `topping` INTEGER NOT NULL, `toppingTime` TEXT, `type` INTEGER NOT NULL, `updateTime` TEXT, `wechat` TEXT, `pic_license` TEXT, `pic_logo` TEXT, `pic1` TEXT, `pic2` TEXT, `pic3` TEXT, `pic4` TEXT, `refreshTime` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "address",
+            "columnName": "address",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "adminQQ",
+            "columnName": "adminQQ",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "apply",
+            "columnName": "apply",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "areaName",
+            "columnName": "areaName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "city",
+            "columnName": "city",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "compString",
+            "columnName": "compString",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "contact",
+            "columnName": "contact",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "contact1",
+            "columnName": "contact1",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "contact2",
+            "columnName": "contact2",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "denominator",
+            "columnName": "denominator",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "district",
+            "columnName": "district",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "edit",
+            "columnName": "edit",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "examineTime",
+            "columnName": "examineTime",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "healthy",
+            "columnName": "healthy",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "info1",
+            "columnName": "info1",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "info2",
+            "columnName": "info2",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lat",
+            "columnName": "lat",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "license",
+            "columnName": "license",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lng",
+            "columnName": "lng",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "mobile",
+            "columnName": "mobile",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "mobile1",
+            "columnName": "mobile1",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "mobile2",
+            "columnName": "mobile2",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "newStore",
+            "columnName": "newStore",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numerator",
+            "columnName": "numerator",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "popularize",
+            "columnName": "popularize",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "popularizeTime",
+            "columnName": "popularizeTime",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "position1",
+            "columnName": "position1",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "position2",
+            "columnName": "position2",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "province",
+            "columnName": "province",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "qqGroup",
+            "columnName": "qqGroup",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "rule",
+            "columnName": "rule",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "score",
+            "columnName": "score",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "shortName",
+            "columnName": "shortName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "tag",
+            "columnName": "tag",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "topping",
+            "columnName": "topping",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "toppingTime",
+            "columnName": "toppingTime",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updateTime",
+            "columnName": "updateTime",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "wechat",
+            "columnName": "wechat",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pic_license",
+            "columnName": "pic_license",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pic_logo",
+            "columnName": "pic_logo",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pic1",
+            "columnName": "pic1",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pic2",
+            "columnName": "pic2",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pic3",
+            "columnName": "pic3",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pic4",
+            "columnName": "pic4",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "refreshTime",
+            "columnName": "refreshTime",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mj_school_name",
+            "unique": false,
+            "columnNames": [
+              "name"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mj_school_name` ON `${TABLE_NAME}` (`name`)"
+          },
+          {
+            "name": "index_mj_school_areaName",
+            "unique": false,
+            "columnNames": [
+              "areaName"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mj_school_areaName` ON `${TABLE_NAME}` (`areaName`)"
+          },
+          {
+            "name": "index_mj_school_province",
+            "unique": false,
+            "columnNames": [
+              "province"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mj_school_province` ON `${TABLE_NAME}` (`province`)"
+          },
+          {
+            "name": "index_mj_school_city",
+            "unique": false,
+            "columnNames": [
+              "city"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mj_school_city` ON `${TABLE_NAME}` (`city`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "mj_school_img",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `img` TEXT NOT NULL, `type` INTEGER NOT NULL, `mj_school_id` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`mj_school_id`) REFERENCES `mj_school`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "img",
+            "columnName": "img",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "schoolId",
+            "columnName": "mj_school_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mj_school_img_mj_school_id",
+            "unique": false,
+            "columnNames": [
+              "mj_school_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mj_school_img_mj_school_id` ON `${TABLE_NAME}` (`mj_school_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "mj_school",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "mj_school_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7c18de76ed427dab89f57c7fd114ea60')"
+    ]
+  }
+}

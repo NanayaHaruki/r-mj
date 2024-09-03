@@ -105,6 +105,15 @@ class MahjongSchoolRepository @Inject constructor(
         data
     }
 
+
+    suspend fun fetchRecord(pageNo: Int,pageSize: Int,id:Int) = withContext(ioDispatcher){
+        fetcher.fetchRecord(pageNo, pageSize, id)
+    }
+
+    suspend fun fetchRank(pageNo: Int,pageSize: Int,pid:Int?) = withContext(ioDispatcher){
+        fetcher.fetchRank(pageNo, pageSize, pid)
+    }
+
     fun getList(
         pageNo: Int,
         pageSize: Int,

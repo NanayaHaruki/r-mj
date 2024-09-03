@@ -1,5 +1,7 @@
 package com.nanaya.r_mj.data.network
 
+import android.util.Log
+import androidx.compose.foundation.text.KeyboardActions
 import com.nanaya.r_mj.data.ApiService
 import com.nanaya.r_mj.data.Dispatcher
 import com.nanaya.r_mj.data.RmjDispatcher
@@ -8,6 +10,7 @@ import com.nanaya.r_mj.data.local.model.BaseDTO
 import com.nanaya.r_mj.data.local.model.MjSchoolDetail
 import com.nanaya.r_mj.data.local.model.MjSchoolListData
 import com.nanaya.r_mj.data.local.model.MjSchoolImg
+import com.nanaya.r_mj.ui.common.LoadMoreState
 import getRequestBody
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -43,30 +46,31 @@ class MjSchoolFetcher @Inject constructor(
             city?.let { queryMap["city"] = it }
 
             val dto = apiService.fetchMahjongSchoolList(queryMap)
-            if(dto.isSuccess()){
+            if (dto.isSuccess()) {
                 Result.success(dto.data)
-            }else{
+            } else {
                 Result.failure(IOException(dto.message))
             }
-        } .getOrElse {  e->
+        }.getOrElse { e ->
             Result.failure(e)
         }
     }
 
-    suspend fun fetchDetail(id:Int):Result<MjSchoolDetail> = withContext(ioDispatcher){
+    suspend fun fetchDetail(id: Int): Result<MjSchoolDetail> = withContext(ioDispatcher) {
         runCatching {
             val dto = apiService.fetchMahjongSchoolDetail(createRequestBody(id))
-            if(dto.isSuccess()){
+            if (dto.isSuccess()) {
                 Result.success(dto.data)
-            }else{
+            } else {
                 Result.failure(IOException(dto.message))
             }
-        }.getOrElse { e->
+        }.getOrElse { e ->
             Result.failure(IOException(e))
         }
     }
-    private fun createRequestBody(id: Int) = JSONObject().let {
-        it.put("params", JSONObject().apply { put("id", id) })
+
+    private fun createRequestBody(id: Int,keyName:String="id") = JSONObject().let {
+        it.put("params", JSONObject().apply { put(keyName, id) })
         getRequestBody(it)
     }
 
@@ -93,16 +97,66 @@ class MjSchoolFetcher @Inject constructor(
             return@withContext deferredResults.awaitAll()
         }
 
-    suspend fun fetchArea():List<Area> = withContext(ioDispatcher){
+    suspend fun fetchArea(): List<Area> = withContext(ioDispatcher) {
         runCatching {
             val res = apiService.fetchArea()
-            if(res.isSuccess()){
+            if (res.isSuccess()) {
                 res.data
-            }else{
+            } else {
                 emptyList()
             }
         }.getOrElse {
             emptyList()
+        }
+    }
+
+    suspend fun fetchRecord(pageNo: Int, pageSize: Int, id: Int) = withContext(ioDispatcher) {
+        runCatching {
+            val res = apiService.fetchRecord(pageNo, pageSize, createRequestBody(id, keyName = "pid"))
+            if (res.isSuccess()) {
+                val listData = res.data
+                val records = listData.records.onEach { it.logtime = it.logtime.replace('T',' ') }
+                if (listData.pages <= listData.current) {
+                    Result.success(LoadMoreState.NoData to records)
+                } else {
+                    Result.success(LoadMoreState.Ready to records)
+                }
+            } else {
+
+                Result.failure(IOException(res.message))
+            }
+        }.getOrElse {
+            it.printStackTrace()
+            Result.failure(it)
+        }
+    }
+
+    suspend fun fetchRank(pageNo: Int, pageSize: Int, pid: Int?) = withContext(ioDispatcher) {
+        runCatching {
+            val params = mutableMapOf(
+                "pageNo" to pageNo.toString(),
+                "pageSize" to pageSize.toString(),
+                "sortField" to "rank",
+                "sortType" to "desc"
+            )
+            if(pid!=null){
+                params["pid"]=pid.toString()
+            }
+            val res = apiService.fetchRanking(params)
+            if (res.isSuccess()) {
+                val listData = res.data
+                val records = listData.records
+                if (listData.pages <= listData.current) {
+                    Result.success(LoadMoreState.NoData to records)
+                } else {
+                    Result.success(LoadMoreState.Ready to records)
+                }
+            } else {
+                Result.failure(IOException(res.message))
+            }
+        }.getOrElse {
+            it.printStackTrace()
+            Result.failure(it)
         }
     }
 
