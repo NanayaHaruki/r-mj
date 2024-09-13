@@ -28,7 +28,7 @@ fun MjSchoolDetailRecord(
     searchPlayer: (String) -> Unit
 ) {
     SwipeRefreshAndLoadMoreList(
-        modifier = Modifier,
+        modifier = Modifier.fillMaxWidth(),
         data = state.data,
         itemLayout = {_, item -> DetailRecordListItem(item) { searchPlayer(it) } },
         isRefreshing = state.isRefreshing,

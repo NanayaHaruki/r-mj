@@ -75,7 +75,7 @@ fun MjSchoolDetailRank(
             totalRate = "总局数"
         ), idx = 1, {})
         SwipeRefreshAndLoadMoreList(
-            modifier = Modifier,
+            modifier = Modifier.fillMaxWidth(),
             data = state.data,
             itemLayout = { idx, item -> RankItem(item, idx) { searchPlayer(it) } },
             isRefreshing = state.isRefreshing,

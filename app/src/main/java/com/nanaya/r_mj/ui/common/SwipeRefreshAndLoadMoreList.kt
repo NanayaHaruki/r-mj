@@ -30,7 +30,7 @@ enum class LoadMoreState {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> SwipeRefreshAndLoadMoreList(
-    modifier: Modifier,
+    modifier: Modifier=Modifier,
     data: List<T>,
     itemLayout: @Composable (Int,T) -> Unit,
     isRefreshing: Boolean,

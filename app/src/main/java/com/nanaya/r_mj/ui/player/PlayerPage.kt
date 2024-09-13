@@ -68,11 +68,17 @@ import ir.ehsannarmani.compose_charts.PieChart
 import ir.ehsannarmani.compose_charts.models.AnimationMode
 import ir.ehsannarmani.compose_charts.models.DividerProperties
 import ir.ehsannarmani.compose_charts.models.DotProperties
+import ir.ehsannarmani.compose_charts.models.GridProperties
+import ir.ehsannarmani.compose_charts.models.LabelProperties
 import ir.ehsannarmani.compose_charts.models.Line
+import ir.ehsannarmani.compose_charts.models.LineProperties
 import ir.ehsannarmani.compose_charts.models.Pie
+import ir.ehsannarmani.compose_charts.models.ZeroLineProperties
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlin.math.ceil
+import kotlin.math.floor
 
 @Composable
 fun PlayerPage(
@@ -83,10 +89,10 @@ fun PlayerPage(
         SnackbarHostState()
     }
     LaunchedEffect(key1 = Unit) {
-        Log.d("player","snack collect start")
+        Log.d("player", "snack collect start")
         viewModel.snackMessageFlow.collect {
-            Log.d("player","snack collect $it")
-            if(it.isNotEmpty()){
+            Log.d("player", "snack collect $it")
+            if (it.isNotEmpty()) {
                 snackState.showSnackbar(it)
             }
         }
@@ -202,6 +208,7 @@ fun PlayerMainPage(
                     scaleAnimExitSpec = tween(300),
                     selectedPaddingDegree = 4f,
                     data = uiState.pieData,
+
                     style = Pie.Style.Stroke()
                 )
                 Column(
@@ -244,25 +251,40 @@ fun PlayerMainPage(
         }
 
         item {
-            LineChart(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .padding(horizontal = 22.dp),
-                data = listOf(
-                    Line(
-                        label = "点数",
-                        values = uiState.recentPoint.ifEmpty { listOf(0.0) },
-                        color = SolidColor(Primary),
-                        dotProperties = DotProperties(enabled = true, color = SolidColor(Primary))
-                    )
-                ),
-                animationMode = AnimationMode.Together(delayBuilder = { it * 500L }),
-                dividerProperties = DividerProperties(enabled = false)
-
-            )
+            PlayerPositionLineChart(uiState.recentPoint)
         }
     }
+}
+
+@Composable
+private fun PlayerPositionLineChart(positions: List<Double>) {
+    val mx = ceil(positions.max() / 10000) * 10000
+    val mn = floor(positions.min() / 10000) * 10000
+    LineChart(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .padding(horizontal = 22.dp),
+        data = listOf(
+            Line(
+                label = "点数",
+                values = positions.ifEmpty { listOf(0.0) },
+                color = SolidColor(Primary),
+                dotProperties = DotProperties(enabled = true, color = SolidColor(Primary))
+            )
+        ),
+        animationMode = AnimationMode.Together(delayBuilder = { it * 500L }),
+        dividerProperties = DividerProperties(enabled = true),
+        zeroLineProperties = ZeroLineProperties(false),
+        gridProperties = GridProperties(
+            xAxisProperties = GridProperties.AxisProperties(enabled = true, lineCount = (mx - mn).toInt() / 10000),
+            yAxisProperties = GridProperties.AxisProperties(enabled = false)
+        ),
+        maxValue = mx,
+        minValue = mn,
+
+
+        )
 }
 
 @Composable
@@ -640,4 +662,10 @@ private fun PlayerPagePreview() {
         onPieClick = {},
         snackState = SnackbarHostState()
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PlayerLineChartPreview() {
+    PlayerPositionLineChart(positions = listOf(8400,23400,66700,12100,2400,-4300,3300,-8900).map { it.toDouble() })
 }
