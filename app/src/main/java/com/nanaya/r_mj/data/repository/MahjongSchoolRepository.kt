@@ -16,7 +16,6 @@ import com.nanaya.r_mj.data.network.MjSchoolFetcher
 import com.nanaya.r_mj.ui.common.LoadMoreState
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -53,7 +52,7 @@ class MahjongSchoolRepository @Inject constructor(
                 imgDao.insert(imgList.flatten())
             }
             if (listData.pages <= listData.current) {
-                Result.success(LoadMoreState.NoData to details)
+                Result.success(LoadMoreState.NoMoreData to details)
             } else {
                 Result.success(LoadMoreState.Ready to details)
             }

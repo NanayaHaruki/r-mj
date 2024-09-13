@@ -22,14 +22,17 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -50,9 +53,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import coil.request.Tags
 import com.nanaya.r_mj.R
 import com.nanaya.r_mj.data.local.model.Area
 import com.nanaya.r_mj.data.local.model.MjSchoolDetail
+import com.nanaya.r_mj.ui.RmjScreen
 import com.nanaya.r_mj.ui.common.LoadMoreState
 import com.nanaya.r_mj.ui.common.SwipeRefreshAndLoadMoreList
 import com.nanaya.r_mj.ui.share.Spinner
@@ -71,17 +76,24 @@ import com.nanaya.r_mj.ui.theme.topbarBg
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     navigateToDetail: (Int) -> Unit,
-    navMonthRank:()->Unit,
+    navMonthRank: () -> Unit,
+    backToMonthRank: (Int,String) -> Unit
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     MjSchoolListPage(
         uiState = uiState as HomeUiState.MjList,
-        navMonthRank=navMonthRank,
+        navMonthRank = navMonthRank,
         onRefresh = { viewModel.updateList() },
         onLoadMore = { viewModel.loadMore() },
-        onItemClick = { detail -> navigateToDetail(detail.id) },
+        onItemClick = { idx,detail ->
+            if ((uiState as HomeUiState.MjList).mode == RmjScreen.LIST_MODE_NORMAL)
+                navigateToDetail(detail.id)
+            else{
+                backToMonthRank(idx,detail.name?:"-")
+            }
+        },
         onAreaChanged = viewModel::updateListByArea,
-        onSearch = viewModel::updateListByName
+        onSearch = viewModel::updateListByName,
     )
 }
 
@@ -90,21 +102,30 @@ fun MjSchoolListPage(
     uiState: HomeUiState.MjList,
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
-    onItemClick: (MjSchoolDetail) -> Unit,
+    onItemClick: (Int,MjSchoolDetail) -> Unit,
     onAreaChanged: (String?, String?, String?) -> Unit,
     onSearch: (String) -> Unit,
-    navMonthRank: () -> Unit,
+    navMonthRank: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     var searchContent by remember {
         mutableStateOf(TextFieldValue(""))
     }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             HomeAppbar {
-                IconButton(onClick = { navMonthRank() }) {
-                    Icon(Icons.Filled.DateRange, null, tint = Color.White)
+                when (uiState.mode) {
+                    RmjScreen.LIST_MODE_NORMAL -> TextButton(onClick = { navMonthRank() }) {
+                        Text("月榜",color = Color.White)
+                    }
+
+//                    RmjScreen.LIST_MODE_SELECT -> TextButton(
+//                        onClick = backToMonthRank
+//                    ) {
+//                        Text("完成")
+//                    }
                 }
             }
         },
@@ -113,6 +134,7 @@ fun MjSchoolListPage(
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             com.nanaya.r_mj.ui.share.SearchBar(
+                label = {Text("输入雀庄名称")},
                 searchQuery = searchContent,
                 onSearchQueryChanged = {
                     searchContent = it
@@ -175,14 +197,14 @@ fun HomeScreenList(
     loadMoreState: LoadMoreState,
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
-    onItemClick: (MjSchoolDetail) -> Unit
+    onItemClick: (Int,MjSchoolDetail) -> Unit,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         val lazyColumnState = rememberLazyListState()
         SwipeRefreshAndLoadMoreList(
             modifier = Modifier.fillMaxSize(),
             data = mjList,
-            itemLayout = { _, detail -> MjSchoolListItem(detail) { onItemClick(detail) } },
+            itemLayout = { idx, detail -> MjSchoolListItem(idx,detail,onItemClick)},
             isRefreshing = isRefreshing,
             loadMoreState = loadMoreState,
             onRefresh = onRefresh,
@@ -205,11 +227,12 @@ fun HomeScreenList(
 
 @Composable
 fun MjSchoolListItem(
+    idx:Int,
     detail: MjSchoolDetail,
-    onclick: (MjSchoolDetail) -> Unit
+    onClick: (Int,MjSchoolDetail) -> Unit
 ) {
     ElevatedCard(
-        onClick = { onclick(detail) }, modifier = Modifier
+        onClick = { onClick(idx,detail) }, modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
         colors = CardDefaults.cardColors(
@@ -228,11 +251,15 @@ fun MjSchoolListItem(
                     .background(Color.DarkGray)
                     .align(Alignment.CenterVertically),
             )
-            Column(modifier = Modifier.padding(start = 8.dp)) {
+            Column(modifier = Modifier.padding(start = 8.dp).weight(1f)) {
                 Text(text = detail.name ?: "", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 Text(text = "地址:${detail.address}", maxLines = 2)
                 Text(text = "QQ群:${detail.qqGroup}")
             }
+            if(detail.checkState!=null) {
+                Checkbox(checked = detail.checkState!!,onCheckedChange = null, modifier = Modifier.align(Alignment.CenterVertically))
+            }
+
         }
         // tag
         Tags(txt = detail.tag ?: "")
@@ -308,7 +335,6 @@ fun AreaSelector(
     data: List<Area>,
     onAreaChanged: (String?, String?, String?) -> Unit
 ) {
-    Log.d("home", data.toString())
     var areaIndex by remember {
         mutableIntStateOf(0)
     }

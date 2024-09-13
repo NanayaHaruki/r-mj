@@ -27,6 +27,11 @@ val Area_West_North = Color(0xFFCCA592)
 val Area_West_South = Color(0xFF8EB4A2)
 val Area_Foreign = Color(0xFF939277)
 
+val Pie1=Color(0xFF4A65BF)
+val Pie2=Color(0xFF86C56A)
+val Pie3=Color(0xFFFAC14E)
+val Pie4=Color(0xFFEC5B5B)
+
 val Link =Color(0xFF0072FF)
-val CurrentIndicatorColor = Color(0xFF038971)
-val NormalIndicatorColor = Color(0xff37575d)
+val Primary = Color(0xFF28B0BE)
+val Secondary = Color(0xff37575d)

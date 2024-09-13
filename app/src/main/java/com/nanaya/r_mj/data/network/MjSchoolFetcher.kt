@@ -1,12 +1,9 @@
 package com.nanaya.r_mj.data.network
 
-import android.util.Log
-import androidx.compose.foundation.text.KeyboardActions
 import com.nanaya.r_mj.data.ApiService
 import com.nanaya.r_mj.data.Dispatcher
 import com.nanaya.r_mj.data.RmjDispatcher
 import com.nanaya.r_mj.data.local.model.Area
-import com.nanaya.r_mj.data.local.model.BaseDTO
 import com.nanaya.r_mj.data.local.model.MjSchoolDetail
 import com.nanaya.r_mj.data.local.model.MjSchoolListData
 import com.nanaya.r_mj.data.local.model.MjSchoolImg
@@ -117,7 +114,7 @@ class MjSchoolFetcher @Inject constructor(
                 val listData = res.data
                 val records = listData.records.onEach { it.logtime = it.logtime.replace('T',' ') }
                 if (listData.pages <= listData.current) {
-                    Result.success(LoadMoreState.NoData to records)
+                    Result.success(LoadMoreState.NoMoreData to records)
                 } else {
                     Result.success(LoadMoreState.Ready to records)
                 }
@@ -147,7 +144,7 @@ class MjSchoolFetcher @Inject constructor(
                 val listData = res.data
                 val records = listData.records
                 if (listData.pages <= listData.current) {
-                    Result.success(LoadMoreState.NoData to records)
+                    Result.success(LoadMoreState.NoMoreData to records)
                 } else {
                     Result.success(LoadMoreState.Ready to records)
                 }

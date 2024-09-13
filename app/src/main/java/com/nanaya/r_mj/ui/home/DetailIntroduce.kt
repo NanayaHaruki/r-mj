@@ -24,8 +24,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.nanaya.r_mj.data.local.model.MjSchoolDetail
-import com.nanaya.r_mj.ui.theme.CurrentIndicatorColor
-import com.nanaya.r_mj.ui.theme.NormalIndicatorColor
+import com.nanaya.r_mj.ui.theme.Primary
+import com.nanaya.r_mj.ui.theme.Secondary
 import kotlinx.coroutines.delay
 
 @Composable
@@ -61,7 +61,7 @@ fun Banner(
                         .size(5.dp)
                 ) {
                     drawCircle(
-                        color = if (i == pageState.currentPage) CurrentIndicatorColor else NormalIndicatorColor
+                        color = if (i == pageState.currentPage) Primary else Secondary
                     )
                 }
             }

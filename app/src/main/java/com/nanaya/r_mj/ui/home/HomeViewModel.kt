@@ -1,8 +1,11 @@
 package com.nanaya.r_mj.ui.home
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.LogUtils
+import com.nanaya.r_mj.data.Dispatcher
+import com.nanaya.r_mj.data.RmjDispatcher
 import com.nanaya.r_mj.data.local.model.Area
 import com.nanaya.r_mj.data.local.model.MjSchoolDetail
 import com.nanaya.r_mj.data.local.model.MjSchoolDetailEntry
@@ -10,6 +13,7 @@ import com.nanaya.r_mj.data.repository.MahjongSchoolRepository
 import com.nanaya.r_mj.ui.RmjScreen
 import com.nanaya.r_mj.ui.common.LoadMoreState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +29,7 @@ import javax.inject.Inject
 
 sealed interface HomeUiState {
     data class MjList(
+        val mode:Int,
         val isRefreshing: Boolean,
         val loadMoreState: LoadMoreState,
         val mjSchoolList: MutableList<MjSchoolDetail>,
@@ -47,9 +52,12 @@ data class FilterArgs(
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val repository: MahjongSchoolRepository
+    private val savedStateHandle: SavedStateHandle,
+    private val repository: MahjongSchoolRepository,
+    @Dispatcher(RmjDispatcher.Default) private val defaultDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
+    private val mode :Int= savedStateHandle.get<Int>(RmjScreen.ARG_LIST_MULTI_SELECT)?:0
     private val pageSize = 20
     private val filterArgs = FilterArgs()
     val _listFlow: MutableStateFlow<MutableList<MjSchoolDetail>> =MutableStateFlow(mutableListOf())
@@ -61,7 +69,7 @@ class HomeViewModel @Inject constructor(
     private val _snackFlow = MutableStateFlow("")
     private val _state = MutableStateFlow<HomeUiState>(
         HomeUiState.MjList(
-            true, LoadMoreState.Ready, mutableListOf(), null
+            mode,true, LoadMoreState.Ready, mutableListOf(), null
 
         )
     )
@@ -73,6 +81,7 @@ class HomeViewModel @Inject constructor(
         get() = _snackFlow
 
     init {
+
         viewModelScope.launch {
             combine(
                 _listFlow,
@@ -82,6 +91,7 @@ class HomeViewModel @Inject constructor(
             ) { mjSchoolList, isRefreshing, _loadMoreState, areaSelectorData ->
 
                 HomeUiState.MjList(
+                    mode,
                     isRefreshing,
                     _loadMoreState,
                     mjSchoolList,
@@ -89,7 +99,7 @@ class HomeViewModel @Inject constructor(
                 )
             }.catch { throwable ->
                 _snackFlow.value = throwable.message ?: ""
-            }.collect {
+            }.collect() {
                 _state.value = it
             }
         }
@@ -111,7 +121,9 @@ class HomeViewModel @Inject constructor(
             _isRefreshing.value=true
             val res = repository.refresh(filterArgs.page,pageSize,filterArgs.name,filterArgs.areaName,filterArgs.province,filterArgs.city)
             if(res.isSuccess){
-                _listFlow.value = res.getOrNull()?.second?.toMutableList()?: mutableListOf()
+                val data = res.getOrNull()?.second?.toMutableList()?: mutableListOf()
+
+                _listFlow.value = data
             }else{
                 _snackFlow.value = res.exceptionOrNull()?.message?:""
             }
@@ -123,6 +135,7 @@ class HomeViewModel @Inject constructor(
     fun updateListByName(name: String) {
         filterArgs.name=name
         updateList()
+
     }
 
     fun updateListByArea(
@@ -156,5 +169,6 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
 
 }

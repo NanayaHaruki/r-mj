@@ -78,6 +78,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.paging.runtime)
     implementation(libs.paging.compose)
+    implementation(libs.charts)
+
     // net
     implementation(libs.okhttp.logging)
     implementation(libs.retrofit)

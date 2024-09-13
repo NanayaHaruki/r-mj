@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.nanaya.r_mj.ui.RmjScreen
 
 @Entity(
     tableName = "mj_school",
@@ -70,5 +71,16 @@ data class MjSchoolDetail(
 
 ){
     @Ignore
+    var checkState:Boolean?=null
+    @Ignore
     var picList:List<String> = emptyList()
+
+    override fun equals(other: Any?): Boolean {
+        if(this===other) return true
+        if(other==null || javaClass!=other.javaClass) return false
+        return id == (other as MjSchoolDetail).id
+    }
+    override fun hashCode(): Int {
+        return id
+    }
 }
