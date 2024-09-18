@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -54,6 +55,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.Tags
+import com.blankj.utilcode.util.LogUtils
 import com.nanaya.r_mj.R
 import com.nanaya.r_mj.data.local.model.Area
 import com.nanaya.r_mj.data.local.model.MjSchoolDetail
@@ -134,6 +136,7 @@ fun MjSchoolListPage(
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             com.nanaya.r_mj.ui.share.SearchBar(
+                modifier = Modifier.padding(8.dp),
                 label = {Text("输入雀庄名称")},
                 searchQuery = searchContent,
                 onSearchQueryChanged = {
@@ -201,6 +204,9 @@ fun HomeScreenList(
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         val lazyColumnState = rememberLazyListState()
+        if(isRefreshing){
+            lazyColumnState.requestScrollToItem(0)
+        }
         SwipeRefreshAndLoadMoreList(
             modifier = Modifier.fillMaxSize(),
             data = mjList,
@@ -251,7 +257,9 @@ fun MjSchoolListItem(
                     .background(Color.DarkGray)
                     .align(Alignment.CenterVertically),
             )
-            Column(modifier = Modifier.padding(start = 8.dp).weight(1f)) {
+            Column(modifier = Modifier
+                .padding(start = 8.dp)
+                .weight(1f)) {
                 Text(text = detail.name ?: "", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 Text(text = "地址:${detail.address}", maxLines = 2)
                 Text(text = "QQ群:${detail.qqGroup}")

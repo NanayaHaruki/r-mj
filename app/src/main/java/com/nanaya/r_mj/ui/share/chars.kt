@@ -92,7 +92,7 @@ fun RadarChart(
                     1-> Offset(x+12.dp.toPx(),y-20.dp.toPx())
                     2-> Offset(x,y)
                     3-> Offset(x-16.dp.toPx(),y)
-                    4-> Offset(x-40.dp.toPx(),y)
+                    4-> Offset(x-30.dp.toPx(),y)
                     else-> Offset(x-60.dp.toPx(),y-20.dp.toPx())
                 })
         }

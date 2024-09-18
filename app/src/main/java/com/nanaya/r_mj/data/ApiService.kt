@@ -66,7 +66,7 @@ interface ApiService {
     suspend fun fetchPlayerTech(@Query("customerId") id:Int):BaseDTO<RemotePlayerTech>
 
     /** 同桌信息 */
-    @GET("gszapi/score/hate")
+    @POST("gszapi/score/hate")
     suspend fun fetchSameTableRecords(
         @Query("pageNo") pageNo: Int,
         @Query("pageSize") pageSize: Int,
@@ -74,7 +74,7 @@ interface ApiService {
     ):BaseDTO<RemoteSameTableListData>
 
     /** 对战记录，分数名字 */
-    @GET("gszapi/customer/rate/page")
+    @POST("gszapi/customer/rate/page")
     suspend fun fetchPlayerHistoryList(
         @Query("pageNo") pageNo: Int,
         @Query("pageSize") pageSize: Int,
@@ -82,7 +82,7 @@ interface ApiService {
     ):BaseDTO<RemotePlayerHistoryListData>
 
     /** 25战 */
-    @GET("gszapi/customer/getCustomerRateList")
+    @POST("gszapi/customer/getCustomerRateList")
     suspend fun fetchPersonalRecordList(
         @Query("customerId") id:Int):BaseDTO<List<RemotePersonalRecentRecords>>
 

@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -51,6 +52,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.blankj.utilcode.util.LogUtils
 import com.nanaya.r_mj.ui.common.LoadMoreState
 import com.nanaya.r_mj.ui.home.HomeAppbar
 import com.nanaya.r_mj.ui.share.RadarChart
@@ -74,11 +76,13 @@ import ir.ehsannarmani.compose_charts.models.Line
 import ir.ehsannarmani.compose_charts.models.LineProperties
 import ir.ehsannarmani.compose_charts.models.Pie
 import ir.ehsannarmani.compose_charts.models.ZeroLineProperties
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlin.math.ceil
 import kotlin.math.floor
+import kotlin.random.Random
 
 @Composable
 fun PlayerPage(
@@ -137,6 +141,7 @@ fun PlayerMainPage(
                 mutableStateOf(TextFieldValue(""))
             }
             SearchBar(
+                modifier = Modifier.padding(8.dp),
                 searchQuery = searchValue,
                 onSearchQueryChanged = { searchValue = it },
                 onSearch = onSearch
@@ -249,15 +254,21 @@ fun PlayerMainPage(
 
             }
         }
-
-        item {
-            PlayerPositionLineChart(uiState.recentPoint)
+        if(uiState.recentPoint.isNotEmpty()) {
+            item(key = uiState.recentPoint) {
+                PlayerPositionLineChart(uiState.recentPoint)
+            }
         }
     }
 }
 
 @Composable
-private fun PlayerPositionLineChart(positions: List<Double>) {
+private fun PlayerPositionLineChart(_positions: List<Double>) {
+
+    val positions by remember {
+        mutableStateOf(_positions)
+    }
+    LogUtils.d(System.identityHashCode(positions).toString()+","+System.identityHashCode(_positions))
     val mx = ceil(positions.max() / 10000) * 10000
     val mn = floor(positions.min() / 10000) * 10000
     LineChart(
@@ -326,12 +337,12 @@ private fun PlayerBaseInfo(uiState: PlayerUiState) {
             }
             Text(uiState.name)
             Row {
-                Text("全国排行：${uiState.allRank}", modifier = Modifier.width(150.dp))
+                Text("全国排行：${uiState.allRank}", modifier = Modifier.width(100.dp))
                 Spacer(modifier = Modifier.width(16.dp))
                 Text("雀庄排行：${uiState.rateRank}")
             }
             Row {
-                Text("总对局数：${uiState.total}", modifier = Modifier.width(150.dp))
+                Text("总对局数：${uiState.total}", modifier = Modifier.width(100.dp))
                 Spacer(modifier = Modifier.width(16.dp))
                 Text("飞人吃一：${uiState.flyEatOne}")
             }
@@ -542,7 +553,7 @@ private fun CirclePreview() {
 }
 
 
-@Preview(heightDp = 1500, showBackground = true)
+@Preview(heightDp = 150, widthDp = 360, showBackground = true)
 @Composable
 private fun PlayerPagePreview() {
     val state = PlayerUiState(
@@ -667,5 +678,8 @@ private fun PlayerPagePreview() {
 @Preview(showBackground = true)
 @Composable
 private fun PlayerLineChartPreview() {
-    PlayerPositionLineChart(positions = listOf(8400,23400,66700,12100,2400,-4300,3300,-8900).map { it.toDouble() })
+    PlayerPositionLineChart(_positions = listOf(8400,23400,66700,12100,2400,-4300,3300,-8900).map { it.toDouble() })
 }
+
+
+
